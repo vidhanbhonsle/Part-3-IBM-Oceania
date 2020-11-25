@@ -20,7 +20,13 @@ How IBMs IoT platform and HERE location services can help you visualize data com
 This steps involves creating a virtual device on IBM cloud by selecting IOT Platform service from your IBM Cloud
 
 ### Step 2: Create Node-RED application on IBM Cloud
+
+For connecting IoT device with IBM Cloud and send the data forward to user application, we are creating Node-RED application on IBM Cloud
+
+### Step 3: Create IoT platform resource on IBM Cloud
+
 This steps involves creating a virtual device on IBM cloud by selecting IOT Platform service from your IBM Cloud
+
 
 ### Step 1: Python code for Visual Recognition
 
