@@ -25,7 +25,7 @@ For connecting IoT device with IBM Cloud and send the data forward to user appli
 
 ### Step 3: Node creation in Node-RED
 
-![Arch](/imgs/flow.png)
+![Arch](/imgs/flow.PNG)
 
 ### Step 1: Python code for Visual Recognition
 
