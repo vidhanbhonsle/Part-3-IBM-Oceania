@@ -30,13 +30,45 @@ For connecting IoT device with IBM Cloud and send the data forward to user appli
 - You can download the node structure from here - https://github.com/vidhanbhonsle/Part-3-IBM-Oceania/blob/main/node_flow.txt
 - After importing deploy the complete flow.
  
-### Step 1: Python code for Visual Recognition
+### Step 4: Python code for publishing data to IBM Cloud
 
-install Watson Developer Cloud library -
-- pip install --upgrade "ibm-watson>=4.0.1"
+With the help of MQTT protocol, data can be easily sent to the cloud. 
 
+```python
+#pip install paho-mqtt
+import json
+import paho.mqtt.client as mqtt
+from time import sleep
+from random import uniform
 
-### Step 2: Integrating Flask in Python code
+latitude = -37.77407606538453
+longitude = 145.03173891068369
+
+ORG = "YOUR_ID"
+DEVICE_TYPE = "YOUR_TYPE" 
+TOKEN = "YOUR_TOKEN"
+DEVICE_ID = "UNIQUE_ID"
+
+server = ORG + ".messaging.internetofthings.ibmcloud.com"
+topicData = "iot-2/evt/data/fmt/json"
+authMethod = "use-token-auth"
+token = TOKEN
+clientId = "d:" + ORG + ":" + DEVICE_TYPE + ":" + DEVICE_ID
+
+mqttc = mqtt.Client(client_id=clientId)
+mqttc.username_pw_set(authMethod, token)
+mqttc.connect(server, 1883, 60)
+
+while True:
+    temperature = uniform(33.0,43.0)
+    payloadData = json.dumps({"temperature":temperature,"latitude":latitude,"longitude":longitude})
+    mqttc.publish(topicData, payloadData)
+    print ("Published: " + "%s;%s/%s "%(temperature,latitude,longitude))
+    sleep(5)
+mqttc.loop()
+```
+
+### Step 5: Integrating Flask in Python code
 
 install Flask library -
 - pip install flask
