@@ -28,35 +28,13 @@ For connecting IoT device with IBM Cloud and send the data forward to user appli
 ![Arch](/imgs/flow.PNG)
 
 You can download the node structure from here - https://github.com/vidhanbhonsle/Part-3-IBM-Oceania/blob/main/node_flow.txt
+After importing deploy the complete flow.
  
 ### Step 1: Python code for Visual Recognition
 
 install Watson Developer Cloud library -
 - pip install --upgrade "ibm-watson>=4.0.1"
 
-```python
-import json
-from ibm_watson import VisualRecognitionV3
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-
-# # Passing API KEY and URL to the Visual Recognition
-authenticator = IAMAuthenticator('IBM_API_KEY')
-
-visual_recognition = VisualRecognitionV3(
-    version='2018-03-19',
-    authenticator=authenticator)
-
-visual_recognition.set_service_url('IBM_URL') 
-
-# Running the Visual Recognition on test.img file
-with open('./test.jpg', 'rb') as image: 
-    classes = visual_recognition.classify(images_file=image,threshold='0.6',classifier_ids='food').get_result()
-
-#print(json.dumps(classes, indent=2))	
-output_query = classes['images'][0]['classifiers'][0]['classes'][1]['class']
-print(output_query)  
-```
-The above code will print "Pizza"
 
 ### Step 2: Integrating Flask in Python code
 
