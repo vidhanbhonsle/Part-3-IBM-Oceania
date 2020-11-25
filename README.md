@@ -23,10 +23,9 @@ This steps involves creating a virtual device on IBM cloud by selecting IOT Plat
 
 For connecting IoT device with IBM Cloud and send the data forward to user application, we are creating Node-RED application on IBM Cloud
 
-### Step 3: Create IoT platform resource on IBM Cloud
+### Step 3: Node creation in Node-RED
 
-This steps involves creating a virtual device on IBM cloud by selecting IOT Platform service from your IBM Cloud
-
+![Arch](/imgs/flow.png)
 
 ### Step 1: Python code for Visual Recognition
 
