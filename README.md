@@ -67,21 +67,9 @@ while True:
     sleep(5)
 mqttc.loop()
 ```
+Save the above code in a python file, provide required value and run the code. It will start publishing data to the IBM Cloud.
 
-### Step 5: Integrating Flask in Python code
+### Step 5: Performing Data Analytics and showing on Map
 
-install Flask library -
-- pip install flask
-
-
-### Step 3: Show your location on a map
-
-Create a folder 'templates' and create a file 'map.html' inside it.
-
-
-### Step 4: Show pizza serving places on Map
-
-Show pizza places around you on a map with a click of a button
-
-An instance of Geocoding and Search Service
-
+The IoT data coming from IoT device is acquired with the help of cloud. Then, passed through a series of data analytics depending on use case and business scenario. 
+You can find the code here -  

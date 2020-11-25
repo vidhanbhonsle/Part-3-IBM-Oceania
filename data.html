@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
+  </head>
+  <body style='margin: 0'>    
+    <div id="mapContainer" style="width: 100vw; height: 100vh;" > </div>
+    <div align="center" style="vertical-align: middle; position:absolute;top:0; right:0;width:120px; height: 20px; border: 1px #999999;
+    background: black; font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 12px; color: white"> <span id="xyz">Loading</span>&nbsp;degrees</div>
+  <script>
+    var latitude = -37.77407606538453;
+    var longitude = 145.03173891068369;
+    
+    var platform = new H.service.Platform({
+            apikey: "HERE_JS_API_KEY"   
+        });
+
+        var defaultLayers = platform.createDefaultLayers();
+        var myPosition = {lat: latitude, lng: longitude};
+        var map = new H.Map(
+            document.getElementById('mapContainer'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 13,
+                center: myPosition
+            });
+
+        var mapEvents = new H.mapevents.MapEvents(map);
+        var behavior = new H.mapevents.Behavior(mapEvents);
+        var ui = H.ui.UI.createDefault(map, defaultLayers);
+
+        var service = platform.getSearchService();
+        
+        var homeIcon = new H.map.Icon('/static/person-male.png',{size: {w: 50, h: 50}});
+        let marker;
+        let actionTriggered = false;    
+        var maxNumberOfHospitals = 40;
+
+      var refreshDt = dataIn => {
+        latitude = dataIn.latitude;
+        longitude = dataIn.longitude;
+        if(!actionTriggered) {
+          var temperature_container = document.getElementById("xyz");
+          temperature_container.innerHTML = dataIn.temperature.toFixed(2);
+        }
+        // if (marker) map.removeObject(marker);
+        marker = new H.map.Marker({lat: latitude, lng: longitude},{icon:homeIcon});
+        map.addObject(marker);
+        
+        service.reverseGeocode({
+        at: `${latitude},${longitude}`
+        }, (result) => {
+        result.items.forEach((item) => {
+            marker.addEventListener('tap', function(evt) {
+                ui.addBubble(new H.ui.InfoBubble(item.position, {
+            content: "<p>Temperature: " + dataIn.temperature +"</p><br><p>Address:" + item.address.label + "</p>"
+            }));
+            });
+        });
+        }, alert);
+
+        if (dataIn.temperature > 42 || dataIn.temperature < 34){
+            if(!actionTriggered){
+                actionTriggered = true;
+                let param = { 
+                at : latitude+','+longitude, 
+                q: 'hospital', 
+                limit:maxNumberOfHospitals,
+                categories:'800-8000-0159,800-8000-0325'
+            }; 
+            service.browse(param,displayhospitals,alert);        
+            }
+        }
+        };
+
+      var refreshDtsct = _ => {
+		uri = "NODE_RED_LINK"
+        $.ajax({
+          async: true,
+          method: 'get',
+          url: uri,
+          success: (res, status, data) => {
+            refreshDt(res)
+          },
+          error: (res, status, data) => { "err",console.log(res) }
+        });
+      };
+	  refreshDtsct();
+      setInterval(_ => {
+        refreshDtsct()
+      }, 5000);
+      function displayhospitals(response){
+        var hospitalIcon = new H.map.Icon('/static/hospital.png',{size: {w: 30, h: 30}}); 
+            // A group that can hold map objects: 
+            var restGroup = new H.map.Group(); 
+            console.log("Hospitals: ",response);
+            var router = platform.getRoutingService(null,8);
+            
+            var travelArray = [];
+            var tmpTimeTravel = 9999;
+            var tmpRoute;
+            
+            for(let i = 0; i<response.items.length; i++){ 
+                let restPosition = response.items[i].position; 
+                let address = response.items[i].address.label; 
+                let restMarker = new H.map.Marker(restPosition,{icon: hospitalIcon} );
+                restMarker.setData("<p>" + address + "</p>"); 
+                restMarker.addEventListener('tap', function(evt){ 
+                    var bubble =  new H.ui.InfoBubble(evt.target.getGeometry(), { 
+                    content: evt.target.getData() 
+                }); 
+
+                ui.addBubble(bubble); 
+                }, false); 
+
+                restGroup.addObject(restMarker); 
+
+                var routingParameters = {
+                        'routingMode': 'fast',
+                        'transportMode': 'car',
+                        'origin': restPosition.lat + ',' + restPosition.lng,
+                        'destination': latitude + ',' + longitude,
+                        'return': 'polyline,travelSummary',
+                        'traffic': 'enabled'
+                        };
+                
+                var onResult = function(result) {
+                    
+                    travelArray.push({"travelTime":result.routes[0].sections[0].travelSummary.duration,"polyline":result.routes[0].sections[0].polyline});
+
+                    if (travelArray.length == maxNumberOfHospitals){
+            
+                      travelArray.forEach( function s(item, index) {
+                      if (item.travelTime < tmpTimeTravel)
+                      {
+                          tmpTimeTravel = item.travelTime;
+                          tmpRoute = item.polyline;
+                      }
+                      });
+                      // console.log("TT:",tmpTimeTravel);
+                      // console.log("TR:",tmpRoute);
+                      
+                      let linestring = H.geo.LineString.fromFlexiblePolyline(tmpRoute);
+                      
+                      var routeOutline = new H.map.Polyline(linestring, {
+                                style: {
+                                  lineWidth: 10,
+                                  strokeColor: 'rgba(255, 0, 0, 0.7)',
+                                  lineTailCap: 'arrow-tail',
+                                  lineHeadCap: 'arrow-head'
+                                }
+                              });
+                      
+                      var routeArrows = new H.map.Polyline(linestring, {
+                                style: {
+                                  lineWidth: 10,
+                                  fillColor: 'white',
+                                  strokeColor: 'rgba(255, 255, 255, 1)',
+                                  lineDash: [0, 2],
+                                  lineTailCap: 'arrow-tail',
+                                  lineHeadCap: 'arrow-head' }
+                                }
+                              );
+                      var routeLine = new H.map.Group();
+                      routeLine.addObjects([routeOutline, routeArrows]);
+                      map.addObject(routeLine);
+                    }                    
+                };
+    
+                router.calculateRoute(routingParameters, onResult,
+                function(error) {
+                    alert(error.message);
+                    });
+                } 
+
+            for(var i = 0; i<travelArray.length; i++){
+                console.log("LOOP DATA: ",travelArray[i]);
+            }
+
+            var tmpTimeTravel = 9999;
+            var tmpRoute;
+            travelArray.forEach( function s(item, index) {
+            if (item.travelTime < tmpTimeTravel)
+            {
+                tmpTimeTravel = item.travelTime;
+                tmpRoute = item.polyline;
+            
+                console.log("TT:",tmpTimeTravel);
+                console.log("TR:",tmpRoute);
+            }
+            });
+            map.addObject(restGroup); 
+      }
+    </script>
+  </body>
+</html>
