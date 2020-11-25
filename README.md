@@ -1,6 +1,6 @@
 # Build a location-aware IoT Ecosystem with HERE and IBM Cloud
 
-Learn how to IBMs IoT platform and HERE location services can help you visualize data coming from ioT devices
+Learn how IBMs IoT platform and HERE location services can help you visualize data coming from ioT devices
 
 #### Sign up for IBM Cloud at https://ibm.biz/HERETechnologies
 #### Get your Here Maps API Key at https://developer.here.com
