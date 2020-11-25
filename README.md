@@ -72,4 +72,4 @@ Save the above code in a python file, provide required value and run the code. I
 ### Step 5: Performing Data Analytics and showing on Map
 
 The IoT data coming from IoT device is acquired with the help of cloud. Then, passed through a series of data analytics depending on use case and business scenario. 
-You can find the code here -  https://github.com/vidhanbhonsle/Part-3-IBM-Oceania/blob/main/data.html
+- You can find the code here -  https://github.com/vidhanbhonsle/Part-3-IBM-Oceania/blob/main/data.html
