@@ -27,8 +27,8 @@ For connecting IoT device with IBM Cloud and send the data forward to user appli
 
 ![Arch](/imgs/flow.PNG)
 
-You can download the node structure from here - 
-
+You can download the node structure from here - https://github.com/vidhanbhonsle/Part-3-IBM-Oceania/blob/main/node_flow.txt
+ 
 ### Step 1: Python code for Visual Recognition
 
 install Watson Developer Cloud library -
